@@ -5,5 +5,7 @@
         public TData Data { get; set; }
 
         public CircuitState CircuitState { get; set; }
+
+        public double ResponseTimeInSeconds { get; set; }
     }
 }

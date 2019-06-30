@@ -1,5 +1,13 @@
-﻿using System;
+﻿using CircuitBreaker.Contract.ReliableService;
+using CircuitBreaker.Contract.ReliableService.MenuServices;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.ServiceFabric.Services.Client;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Fabric;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -8,17 +16,17 @@ namespace OLOWeb.Controllers
     public class MenuController : Controller
     {
 
-        private static readonly string RequestLog = nameof(RequestLog);
-        private static readonly Uri MenuServiceUri;
-        private readonly IMenuService menuServiceClient;
+        private readonly string RequestLog = nameof(RequestLog);
+        private readonly Uri MenuServiceUri;
+        private readonly IMenuReliableService menuServiceClient;
 
         public MenuController()
         {
             MenuServiceUri = new Uri(FabricRuntime.GetActivationContext().ApplicationName + "/MenuService");
-            menuServiceClient = ServiceProxy.Create<IWeatherService>(MenuServiceUri, new ServicePartitionKey("basic"));
+            //menuServiceClient = ServiceProxy.Create<IWeatherService>(MenuServiceUri, new ServicePartitionKey("basic"));
         }
 
-        public IActionResult Get(string id)
+        public async Task<IActionResult> Get(string id)
         {
             List<RequestLog> requestLog = null;
             if (this.HttpContext.Session.Keys.Contains(RequestLog))
@@ -44,7 +52,7 @@ namespace OLOWeb.Controllers
             return this.View(result);
         }
 
-        public IActionResult Get()
+        public async Task<IActionResult> Get()
         {
             List<RequestLog> requestLog = null;
             if (this.HttpContext.Session.Keys.Contains(RequestLog))

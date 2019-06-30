@@ -1,15 +1,18 @@
-﻿using System;
+﻿using Microsoft.ServiceFabric.Data;
+using Microsoft.ServiceFabric.Data.Collections;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CircuitBreaker.Contract
 {
-    public class CircuitBreaker
+    public class CircuitBreakerManager
     {
         private IReliableStateManager stateManager;
 
         private readonly int resetTimeOut;
 
-        public CircuitBreaker(IReliableStateManager stateManager, int resetTimeoutInMilliseconds)
+        public CircuitBreakerManager(IReliableStateManager stateManager, int resetTimeoutInMilliseconds)
         {
             this.stateManager = stateManager;
             this.resetTimeOut = resetTimeoutInMilliseconds;

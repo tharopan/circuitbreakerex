@@ -4,9 +4,15 @@ using System.Fabric;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CircuitBreaker.Contract;
+using CircuitBreaker.Contract.ReliableService;
+using CircuitBreaker.Contract.ReliableService.MenuServices;
+using CircuitBreaker.Contract.ReliableService.Models;
+using MenuReliableService.ActionServices;
 using Microsoft.ServiceFabric.Data.Collections;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Runtime;
+using Newtonsoft.Json;
 
 namespace MenuReliableService
 {
@@ -15,20 +21,25 @@ namespace MenuReliableService
     /// </summary>
     internal sealed class MenuReliableService : StatefulService, IMenuReliableService
     {
-        private CircuitBreaker circuitBreaker;
+        private CircuitBreakerManager circuitBreaker;
         private MenuActionService menuActionService;
         private MenuFailActionService menuFailActionService;
 
         public MenuReliableService(StatefulServiceContext context)
             : base(context)
         {
-            this.circuitBreaker = new CircuitBreaker(this.StateManager, 50000);
+            this.circuitBreaker = new CircuitBreakerManager(this.StateManager, 50000);
             this.menuActionService = new MenuActionService();
             this.menuFailActionService = new MenuFailActionService();
         }
 
+        public async  Task<Response<IEnumerable<Menu>>> Get()
+        {
+            throw new NotImplementedException();
+        }
 
-        public async Task<Menu> Get(string id)
+
+        public async Task<Response<Menu>> Get(string id)
         {
             var counterState = await this.StateManager.GetOrAddAsync<IReliableDictionary<string, string>>(
                 "menuState");
@@ -42,6 +53,7 @@ namespace MenuReliableService
             this.circuitBreaker.Invoke(
                 async () =>
                 {
+                    //menuActionService.InvokeGet(id, out result);
 
                     using (var tx = this.StateManager.CreateTransaction())
                     {
@@ -63,7 +75,7 @@ namespace MenuReliableService
                         var value = await counterState.TryGetValueAsync(tx, "savedMenu");
                         if (value.HasValue)
                         {
-                            result = JsonConvert.DeserializeObject<WeatherReport>(value.Value);
+                            result = JsonConvert.DeserializeObject<Response<Menu>>(value.Value);
                         }
                         else
                         {

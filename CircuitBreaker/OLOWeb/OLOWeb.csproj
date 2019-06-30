@@ -16,4 +16,9 @@
     <PackageReference Include="Microsoft.ServiceFabric.AspNetCore.Kestrel" Version="3.3.664.0" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <ProjectReference Include="..\CircuitBreaker.Contract.ReliableService\CircuitBreaker.Contract.ReliableService.csproj" />
+  </ItemGroup>
+
 </Project>
